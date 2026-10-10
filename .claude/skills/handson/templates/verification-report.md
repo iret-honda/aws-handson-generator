@@ -8,7 +8,8 @@
 | プロファイル / アカウントID | {{profile}} / {{accountId}} |
 | リージョン | {{region}} |
 | 検証ラウンド | {{rounds}}回(合格はラウンド {{passedRound}}) |
-| 検証方法 | フェーズ1: 人による手動実行 |
+| 検証方法 | {{method}}(フェーズ2以降は「自動: handson-verifier / sandbox-runner」) |
+| CloudTrail の追跡 | ユーザーエージェントに `handson-{{jobId}}` を含む呼び出し |
 
 ## 実行結果
 

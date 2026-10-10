@@ -1,0 +1,3 @@
+#!/bin/bash
+# sandbox-runner のシム。PATH の先頭に置かれ、引数を検査してから本物のコマンドを実行する(src/sandbox_runner/guard.py)。
+exec "$SANDBOX_PYTHON" -I -m sandbox_runner.guard "${0##*/}" "$@"

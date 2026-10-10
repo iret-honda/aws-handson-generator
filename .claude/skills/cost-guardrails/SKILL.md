@@ -64,6 +64,9 @@ description: ハンズオン検証費用の守り。1本$1.00の上限、構成�
 }
 ```
 
-- `estimatedUsd`: 検証1回分の見積もり。構成案の判定に使う
+- `estimatedUsd`: 検証1回分の見積もり。構成案の判定に使う。`items` の合計 + 時間課金 × 実行時間の上限(60分)
+- `items`: 時間課金以外(リクエスト課金、一括のバッファなど)。検証1回分の量で書く
+- `hourlyResources`: 時間課金のリソース(`{"resource", "unitPriceUsdPerHour", "minimumHours"}`、`minimumHours` は最低課金時間があれば)。`items` には入れない
 - `verifiedEstimateUsd`: 検証後、実際の実行時間を反映した見積もり(実績額ではない)。オーケストレーターが追記する
-- `hourlyResources`: 時間課金のリソース(`{"resource", "unitPriceUsdPerHour"}`)。検証中の見積もり更新に使う
+
+検証中は `sandbox-runner` の `estimate_job_cost` が、ラウンドごとに「`items` の合計 + Σ 単価 × 経過時間」で見積もりを更新し、全ラウンドの合計が上限の `teardownRatio`(9割 = $0.90)に達したら `run_step` を止めて teardown を促す。`items` と `hourlyResources` が実態より小さいとこの守りが効かないので、量は多めに見積もる。

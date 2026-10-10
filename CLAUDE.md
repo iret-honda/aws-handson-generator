@@ -4,16 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 現状
 
-**フェーズ1(試作: Claude Codeで手動運用、検証は人が実施)を実装中**。一次資料は `docs/` の設計書。
+**フェーズ2(`sandbox-runner` と検証ループの自動化)を実装中**(ブランチ `feature/phase2`)。フェーズ1(ゲート1: 手本の1本 `sqs-intro-20261010-01`)は完了。一次資料は `docs/` の設計書。
 
 - **`docs/AWSハンズオン自動生成エージェント 設計書.md` が最新版**(要件確定済み、残課題なし。図は `docs/images/`)。PDF 版は作成者の氏名を含むためリポジトリに置かない(`docs/*.pdf` は gitignore 済み)。
 - 要件の変更は設計書の「前提と要件」表を更新して管理する方針。
-- フェーズ1では検証担当のサブエージェントと `sandbox-runner` MCP はまだない(フェーズ2で作る)。`/handson` が検証シートを作り、人が実行して結果を返す。
+- 検証は `handson-verifier` サブエージェントが `sandbox-runner` MCP(`mcp/sandbox-runner/`、Python + uv)で自動実行する。仕組みと守りの詳細は `mcp/sandbox-runner/README.md`。
+- ゲート2(後片付け漏れなしで連続合格)は `python3 scripts/gate-status.py` で判定する。必要な回数は設定の `gate2.requiredConsecutivePasses`。フェーズ1の手動検証の記録は数えない。
 
 ## よく使うコマンド
 
-- `/handson <サービス名> [--iac cdk|terraform] [--profile <名前>] [--region <リージョン>]` — 生成開始。`/handson --resume <job-id>` で再開
-- `./scripts/telemetry.sh up|down|status` — トークン計測用の OpenTelemetry Collector(Docker)。生データは `telemetry/data/`。共有の `.claude/settings.json` の OTel 用 `env` はセッションに反映されなかった(2026-10-10、VSCode 拡張で確認)。各自 `.claude/settings.local.json`(gitignore 済み)に同じ `env` を置く
+- `/handson <サービス名> [--iac cdk|terraform] [--profile <名前>] [--region <リージョン>]` — 生成開始。`/handson --resume <job-id>` で再開、`/handson --verify-only <job-id>` で既存のハンズオンを再検証(ゲート2の確認用)
+- `cd mcp/sandbox-runner && uv run pytest -q` — sandbox-runner のテスト(AWS には接続しない)
+- `./scripts/cleanup-stale.sh <profile> <region> [--execute]` — タグ付きで24時間以上経ったリソースの一覧(`--execute` で削除)
+- `python3 scripts/gate-status.py` — ゲート2の達成状況
+- `./scripts/telemetry.sh up|down|status` — トークン計測用の OpenTelemetry Collector(Docker)。生データは `telemetry/data/`。共有の `.claude/settings.json` の OTel 用 `env` はセッションに反映されなかった(2026-10-10、VSCode 拡張で確認)。各自 `.claude/settings.local.json`(gitignore 済み)に同じ `env` を置く。`run_step` の deploy は数分以上かかるので、MCP ツールのタイムアウト `MCP_TOOL_TIMEOUT`(`.claude/settings.json` の `env` に 1900000 ミリ秒)も同じく置く
 - `python3 scripts/report.py <job-id> [--check]` — 実行レポート(トークン数・想定コスト)。`--check` は上限判定のみ
 - `./scripts/list-tagged.sh <job-id> <profile> <region>` — タグ付きリソースの棚卸し(後片付け検証)
 - 上限・既定値・OTelの項目名は `config/handson.config.json`
@@ -21,7 +25,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## ファイルの置き場所
 
-- `jobs/<job-id>/` — 各ステップの中間成果物(input.json、phases.jsonl、01-research.md、02-plan.md、aws-cost.json、approvals.md、verification/、review.md、token-report.md)
+- `jobs/<job-id>/` — 各ステップの中間成果物(input.json、phases.jsonl、01-research.md、02-plan.md、aws-cost.json、approvals.md、verification/(round-N.md と round-N.json)、review.md、token-report.md)
+- `jobs/<job-id>/sandbox/` — sandbox-runner の作業領域(セッション、シェル変数、生の出力)。gitignore 済みで、Edit / Write も deny
 - `handsons/<job-id>/` — 成果物(README.md=本文、cdk/ または terraform/、verification-report.md)
 
 ## 何を作るか
@@ -39,7 +44,7 @@ AWSのサービス名を入力すると、サンドボックスで手順を実�
 ## 想定するリポジトリ構成(Claude Code上で動かす)
 
 - オーケストレーター: スラッシュコマンド `/handson <サービス名> [--iac cdk|terraform] [--profile <名前>] [--region <リージョン>]`
-- 4担当(リサーチ/執筆/検証/レビュー): `.claude/agents/` のサブエージェント。それぞれ使えるツールとMCPを限定する
+- 4担当(リサーチ/執筆/検証/レビュー): `.claude/agents/` のサブエージェント(`handson-researcher` / `handson-writer` / `handson-verifier` / `handson-reviewer`)。それぞれ使えるツールとMCPを限定する
 - スキル: `.claude/skills/<name>/SKILL.md` + テンプレート。`handson-writing` / `handson-structure` / `iac-cdk` / `iac-terraform` / `cost-guardrails` / `cleanup-checklist` / `review-rubric`
 - MCP接続: リポジトリ直下の `.mcp.json`。cloneすれば誰でも同じ構成で動くようにする
 - 権限とテレメトリ: `.claude/settings.json`
