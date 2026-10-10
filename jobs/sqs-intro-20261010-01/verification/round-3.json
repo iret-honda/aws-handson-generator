@@ -1,0 +1,22 @@
+{
+  "jobId": "sqs-intro-20261010-01",
+  "round": 3,
+  "mode": "auto",
+  "result": "fail",
+  "startedAt": "2026-10-10T20:16:08+00:00",
+  "endedAt": "2026-10-10T20:26:26+00:00",
+  "static": {"S1": "pass", "S2": "pass", "S3": "pass", "S4": "pass"},
+  "failedSteps": [
+    {
+      "blockId": "prep-4#1",
+      "reason": "確認ポイント(2.1145.0 から始まるバージョン)と出力が違う。ランナーが npx --no cdk --version に書き換えており、npm のバージョンが表示された可能性が高い(本文ではなくランナー側の問題の疑い、要確認)",
+      "stderr": "stdout: 10.9.7 / stderr: sandbox-runner: 実行: npx --no cdk --version"
+    }
+  ],
+  "deniedSteps": [],
+  "cliSubstituted": [],
+  "offTextActions": [],
+  "cleanup": {"readmeCleanupOk": true, "remainingCount": 0, "remainingAfterTeardown": 0, "manualDeletion": []},
+  "limits": {"stoppedByLimit": false, "reasons": []},
+  "estimatedUsd": 0.0102
+}

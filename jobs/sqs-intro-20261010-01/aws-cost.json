@@ -29,5 +29,5 @@
   ],
   "hourlyResources": [],
   "verifiedEstimateUsd": 0.0102,
-  "verifiedEstimateNote": "round 1(2026-10-10 16:16 JST 開始)。時間課金リソースなしのため実行時間による増加なし。実行したSQSリクエストは約30件で見積もりの500件以内。見積もり額であり実績額ではない(Cost Explorer 未使用)。round 2(変更箇所のみ)も時間課金なし、SQS リクエスト10件未満で、合計でも当初の見積もり $0.0102/回 の範囲内"
+  "verifiedEstimateNote": "round 1(2026-10-10 16:16 JST 開始)。時間課金リソースなしのため実行時間による増加なし。実行したSQSリクエストは約30件で見積もりの500件以内。見積もり額であり実績額ではない(Cost Explorer 未使用)。round 2(変更箇所のみ)も時間課金なし、SQS リクエスト10件未満で、合計でも当初の見積もり $0.0102/回 の範囲内 / round 3(2026-10-11 05:15 JST 開始、自動検証): teardown の見積もり $0.0102。見積もり額であり実績額ではない(Cost Explorer 未使用) / round 4(自動検証): teardown の見積もり $0.0102 / round 5(自動検証): teardown の見積もり $0.0102"
 }
