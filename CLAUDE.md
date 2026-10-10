@@ -13,10 +13,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## よく使うコマンド
 
 - `/handson <サービス名> [--iac cdk|terraform] [--profile <名前>] [--region <リージョン>]` — 生成開始。`/handson --resume <job-id>` で再開
-- `./scripts/telemetry.sh up|down|status` — トークン計測用の OpenTelemetry Collector(Docker)。生データは `telemetry/data/`
+- `./scripts/telemetry.sh up|down|status` — トークン計測用の OpenTelemetry Collector(Docker)。生データは `telemetry/data/`。共有の `.claude/settings.json` の OTel 用 `env` はセッションに反映されなかった(2026-10-10、VSCode 拡張で確認)。各自 `.claude/settings.local.json`(gitignore 済み)に同じ `env` を置く
 - `python3 scripts/report.py <job-id> [--check]` — 実行レポート(トークン数・想定コスト)。`--check` は上限判定のみ
 - `./scripts/list-tagged.sh <job-id> <profile> <region>` — タグ付きリソースの棚卸し(後片付け検証)
 - 上限・既定値・OTelの項目名は `config/handson.config.json`
+- `./scripts/mask-sensitive.sh <job-id>` — コミット前のマスキング。**コミットするファイルに機密情報を残さないことは必須**。AWS アカウントID(→ `123456789012`)、SQS の受信ハンドル(→ 先頭8文字 + `...(省略)`)、検証シートのメッセージID(→ `<message-id-N>`)と検証者の実名(→ `検証者A`)を置き換える。`.githooks/pre-commit` は、これらにアクセスキーIDとパブリック IP を加えたものを検出してコミットを止める。clone ごとに `git config core.hooksPath .githooks` で有効にする
 
 ## ファイルの置き場所
 

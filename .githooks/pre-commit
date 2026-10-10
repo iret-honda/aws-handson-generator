@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# マスキングし忘れた機密情報を含む変更をコミットさせない。追加・変更された行だけを調べる。
+#   - AWS アカウントIDらしき12桁の数字(例示値 123456789012 は許可)
+#   - AWS アクセスキーID(AKIA / ASIA で始まる20文字)
+#   - パブリック IPv4 アドレス(プライベート・ループバック・リンクローカル・ドキュメント用は許可)
+#   - 省略していない SQS の受信ハンドル(AQEB で始まる長い文字列)
+#   - 検証シート(verification/*.md)の検証者欄の実名(「(記入)」か「検証者A」などは許可)
+# マスキングは ./scripts/mask-sensitive.sh <job-id> で行う。
+# 有効化(clone ごとに1回): git config core.hooksPath .githooks
+set -euo pipefail
+
+git diff --cached --no-color -U0 --diff-filter=ACMR -- . ':(exclude)**/package-lock.json' \
+  | python3 -c '
+import ipaddress
+import re
+import sys
+
+ACCOUNT = re.compile(r"(?<![0-9A-Za-z])\d{12}(?![0-9A-Za-z])")
+ACCESS_KEY = re.compile(r"(?<![A-Z0-9])(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])")
+IPV4 = re.compile(r"(?<![0-9.])(?:\d{1,3}\.){3}\d{1,3}(?![0-9.])")
+RECEIPT = re.compile(r"AQEB[A-Za-z0-9+/=]{32,}")
+VERIFIER = re.compile(r"^\| 検証者 \| (?!\(記入\) \||検証者[A-Z] \|)")
+DOC_NETS = [ipaddress.ip_network(n) for n in ("192.0.2.0/24", "198.51.100.0/24", "203.0.113.0/24")]
+
+
+def public_ip(s):
+    try:
+        ip = ipaddress.ip_address(s)
+    except ValueError:
+        return False  # バージョン番号など、IP として不正なもの
+    return ip.is_global and not any(ip in n for n in DOC_NETS)
+
+
+hits = set()
+path = ""
+for raw in sys.stdin:
+    if raw.startswith("+++ "):
+        path = raw[6:].rstrip("\n")
+        continue
+    if not raw.startswith("+"):
+        continue
+    line = raw[1:].rstrip("\n")
+    for m in ACCOUNT.findall(line):
+        if m != "123456789012":
+            hits.add(f"{path}: アカウントID {m}")
+    for m in ACCESS_KEY.findall(line):
+        if not m.endswith("EXAMPLE"):  # AWS ドキュメントの例示キーは許可
+            hits.add(f"{path}: アクセスキーID {m[:8]}...")
+    for m in IPV4.findall(line):
+        if public_ip(m):
+            hits.add(f"{path}: パブリック IP {m}")
+    for m in RECEIPT.findall(line):
+        hits.add(f"{path}: 受信ハンドル {m[:8]}...")
+    if "/verification/" in path and path.endswith(".md") and VERIFIER.search(line):
+        hits.add(f"{path}: 検証者欄の実名")
+
+if hits:
+    print("pre-commit: マスキングされていない機密情報があります。マスキングしてからコミットしてください。", file=sys.stderr)
+    for h in sorted(hits):
+        print("  " + h, file=sys.stderr)
+    print("  対処: ./scripts/mask-sensitive.sh <job-id>(IP とアクセスキーは手で消す)", file=sys.stderr)
+    sys.exit(1)
+'

@@ -1,5 +1,7 @@
-# テレメトリの生データ(ジョブごとの集計結果は jobs/<job-id>/ に残る)
+# テレメトリの生データ(ジョブごとの集計結果は jobs/<job-id>/token-report.md に残る)
+# jobs/<job-id>/telemetry.json は report.py が毎回作る抽出結果で、メールアドレスや組織IDを含むためコミットしない
 telemetry/data/
+jobs/*/telemetry.json
 
 # IaC の生成物と state
 node_modules/
@@ -10,3 +12,7 @@ cdk.context.json
 *.tfstate.*
 
 .DS_Store
+
+# 個人用の Claude Code 設定(テレメトリの env など)
+.claude/settings.local.json
+outputs/

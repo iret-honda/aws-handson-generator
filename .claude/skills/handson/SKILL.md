@@ -103,9 +103,19 @@ disable-model-invocation: true
 
 ## 8. 人による最終レビューと出力(ゲート)
 
-成果物の一覧とレビュー結果を提示し、AskUserQuestion で公開可否を聞く。承認されたら `approvals.md` に追記し、`handsons/<job-id>/` と `jobs/<job-id>/`(テレメトリ生データを除く)を git にコミットする。コミットメッセージは `handson: <サービス名> <レベル> (<job-id>)`。
+成果物の一覧とレビュー結果を提示し、AskUserQuestion で公開可否を聞く。承認されたら次の順に進める。
 
-フェーズ1では、ゲート1の手本として採用する1本が決まったら、`handsons/<job-id>/` を `.claude/skills/handson-writing/examples/` にコピーするかを人に確認する。
+1. `approvals.md` に追記する
+2. フェーズ1では、ゲート1の手本として採用する1本が決まったら、`handsons/<job-id>/` を `.claude/skills/handson-writing/examples/` にコピーするかを人に確認する(コピーは `node_modules` と `cdk.out` を除く)
+3. **マスキング(必須)**: `./scripts/mask-sensitive.sh <job-id>` を実行する。コピーした手本も対象になるので、コピーの後に実行する。置き換えるのは次のもの
+   - AWS アカウントID → 例示値 `123456789012`
+   - SQS の受信ハンドル → 先頭8文字 + `...(省略)`
+   - 検証シート内のメッセージID → `<message-id-N>`(同じIDは同じ番号)
+   - 検証シートの検証者欄の実名 → `検証者A`
+   - スクリプトが扱わないアクセスキーやパブリック IP が成果物に入っていたら、手で消す。UUID の一部など、スクリプトが拾えない断片が判定欄などに残っていないかも確認する
+4. `handsons/<job-id>/` と `jobs/<job-id>/` を git にコミットする(`telemetry.json` は `.gitignore` 済み)。コミットメッセージは `handson: <サービス名> <レベル> (<job-id>)`
+
+pre-commit フック(`.githooks/pre-commit`)が、追加・変更された行にアカウントID・アクセスキーID・パブリック IP・省略していない受信ハンドル・検証者欄の実名があるとコミットを止める。止められたら、フックを外したり `--no-verify` を使ったりせず、マスキングし直してからコミットする。
 
 ## 再開(`--resume <job-id>`)
 
