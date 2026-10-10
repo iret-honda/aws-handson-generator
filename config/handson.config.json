@@ -1,0 +1,49 @@
+{
+  "defaults": {
+    "profile": "default",
+    "region": "ap-northeast-1",
+    "iac": "cdk"
+  },
+  "limits": {
+    "awsCostUsd": 1.0,
+    "planRejectRatio": 0.8,
+    "tokenCostUsd": 10.0,
+    "maxRuntimeMinutes": 60,
+    "maxFixLoops": 3
+  },
+  "tagging": {
+    "jobTagKey": "handson-job-id",
+    "staleHours": 24
+  },
+  "telemetry": {
+    "rawDir": "telemetry/data",
+    "logsFile": "logs.jsonl",
+    "metricsFile": "metrics.jsonl",
+    "names": {
+      "apiRequestEvent": ["claude_code.api_request", "api_request"],
+      "tokenUsageMetric": "claude_code.token.usage",
+      "costUsageMetric": "claude_code.cost.usage",
+      "sessionIdAttr": "session.id",
+      "timestampAttr": "event.timestamp",
+      "modelAttr": "model",
+      "inputTokensAttr": "input_tokens",
+      "outputTokensAttr": "output_tokens",
+      "cacheReadTokensAttr": "cache_read_tokens",
+      "cacheCreationTokensAttr": "cache_creation_tokens",
+      "costUsdAttr": "cost_usd",
+      "tokenTypeAttr": "type",
+      "tokenTypes": {
+        "input": "input",
+        "output": "output",
+        "cacheRead": "cacheRead",
+        "cacheCreation": "cacheCreation"
+      }
+    }
+  },
+  "phases": [
+    { "id": "research", "label": "リサーチ・構成案" },
+    { "id": "writing", "label": "執筆" },
+    { "id": "verification", "label": "検証" },
+    { "id": "review", "label": "レビュー" }
+  ]
+}

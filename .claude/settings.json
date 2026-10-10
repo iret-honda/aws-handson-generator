@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
+    "OTEL_METRIC_EXPORT_INTERVAL": "10000",
+    "OTEL_LOGS_EXPORT_INTERVAL": "5000"
+  },
+  "enabledMcpjsonServers": [
+    "aws-knowledge",
+    "aws-documentation",
+    "aws-iac",
+    "aws-terraform",
+    "aws-pricing"
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(./scripts/new-job.sh *)",
+      "Bash(./scripts/phase.sh *)",
+      "Bash(./scripts/aws-identity.sh *)",
+      "Bash(./scripts/list-tagged.sh *)",
+      "Bash(python3 scripts/report.py *)",
+      "mcp__aws-knowledge",
+      "mcp__aws-documentation",
+      "mcp__aws-iac",
+      "mcp__aws-terraform",
+      "mcp__aws-pricing"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ],
+    "deny": [
+      "Bash(aws *)",
+      "Bash(cdk *)",
+      "Bash(npx cdk *)",
+      "Bash(npx aws-cdk *)",
+      "Bash(npm run cdk *)",
+      "Bash(terraform *)",
+      "Bash(tofu *)",
+      "Bash(sam *)",
+      "Read(~/.aws/credentials)",
+      "Read(~/.aws/config)"
+    ]
+  }
+}

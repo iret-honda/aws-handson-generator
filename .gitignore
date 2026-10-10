@@ -1,0 +1,12 @@
+# テレメトリの生データ(ジョブごとの集計結果は jobs/<job-id>/ に残る)
+telemetry/data/
+
+# IaC の生成物と state
+node_modules/
+cdk.out/
+cdk.context.json
+.terraform/
+*.tfstate
+*.tfstate.*
+
+.DS_Store
