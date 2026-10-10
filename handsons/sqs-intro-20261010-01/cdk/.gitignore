@@ -1,0 +1,8 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+cdk.out
+cdk.context.json
+# ハンズオン中に受信結果を保存するファイル
+received-*.txt

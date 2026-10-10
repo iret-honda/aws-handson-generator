@@ -1,0 +1,12 @@
+{
+  "jobId": "sqs-intro-20261010-01",
+  "service": "Amazon SQS",
+  "iac": "cdk",
+  "profile": "default",
+  "accountId": "123456789012",
+  "region": "ap-northeast-1",
+  "level": "入門",
+  "durationMinutes": 60,
+  "theme": null,
+  "createdAt": "2026-10-10T06:11:52+00:00"
+}

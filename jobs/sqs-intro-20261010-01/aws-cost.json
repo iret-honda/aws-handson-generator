@@ -1,0 +1,33 @@
+{
+  "estimatedUsd": 0.0102,
+  "estimatedUsdAllRounds": 0.0408,
+  "basis": "Pricing MCP 未使用(接続失敗)、公式料金ページから取得。https://aws.amazon.com/sqs/pricing/ は読めたが単価表が描画されず数値が取れなかったため、AWS 公式ブログ(https://aws.amazon.com/blogs/aws-cloud-financial-management/aws-price-list-gets-a-natural-language-upgrade-introducing-the-aws-pricing-mcp-server/)の標準キュー $0.40/100万リクエストを使用(リージョン記載なし。ap-northeast-1 の値としては未確認)。SQS 標準キュー リクエスト 500件/回、CloudFormation は AWS::* のため追加料金なし(https://aws.amazon.com/cloudformation/pricing/)、リージョン単価の不確かさと CDK アセットの S3 リクエスト分をバッファ $0.01 で計上。ap-northeast-1、無料枠なし、時間課金リソースなし",
+  "pricingRegion": "ap-northeast-1",
+  "retrievedAt": "2026-10-10T06:30:00Z",
+  "items": [
+    {
+      "resource": "SQS 標準キュー リクエスト",
+      "unitPriceUsd": 4e-07,
+      "unit": "request",
+      "quantity": 500,
+      "usd": 0.0002
+    },
+    {
+      "resource": "CloudFormation スタック(AWS::* リソースのみ)",
+      "unitPriceUsd": 0,
+      "unit": "operation",
+      "quantity": 3,
+      "usd": 0
+    },
+    {
+      "resource": "バッファ(リージョン単価の不確かさ、CDK アセットの S3 リクエスト。単価未取得)",
+      "unitPriceUsd": 0.01,
+      "unit": "lump-sum",
+      "quantity": 1,
+      "usd": 0.01
+    }
+  ],
+  "hourlyResources": [],
+  "verifiedEstimateUsd": 0.0102,
+  "verifiedEstimateNote": "round 1(2026-10-10 16:16 JST 開始)。時間課金リソースなしのため実行時間による増加なし。実行したSQSリクエストは約30件で見積もりの500件以内。見積もり額であり実績額ではない(Cost Explorer 未使用)。round 2(変更箇所のみ)も時間課金なし、SQS リクエスト10件未満で、合計でも当初の見積もり $0.0102/回 の範囲内"
+}
