@@ -162,8 +162,11 @@ def test_cdk_outside_job_dir_is_denied():
 
 
 def test_npx_adds_no_install():
-    assert check_npx(["cdk", "synth", "-c", f"jobId={JOB_ID}"], ctx(CDK))[0] == "--no"
+    assert check_npx(["cdk", "synth", "-c", f"jobId={JOB_ID}"], ctx(CDK))[:3] == ["--no", "--", "cdk"]
     check_npx(["ts-node", "--prefer-ts-exts", "bin/app.ts"], ctx(CDK))
+    # `--` がないと npm が --version を自分宛てと解釈する
+    assert check_npx(["cdk", "--version"], ctx(CDK)) == ["--no", "--", "cdk", "--version"]
+    assert check_npx(["--", "cdk", "--version"], ctx(CDK)) == ["--no", "--", "cdk", "--version"]
     with pytest.raises(PolicyError):
         check_npx(["some-package"], ctx(CDK))
 

@@ -314,6 +314,8 @@ NPX_FLAGS = {"--yes", "-y", "--no", "--no-install", "--quiet", "-q"}
 def check_npx(args: list[str], ctx: Context) -> list[str]:
     check_cwd(ctx)
     rest = [a for a in args if a not in NPX_FLAGS]
+    if rest[:1] == ["--"]:
+        rest = rest[1:]
     if rest in (["--version"], ["-v"]):
         return args
     if not rest:
@@ -325,8 +327,9 @@ def check_npx(args: list[str], ctx: Context) -> list[str]:
         check_cdk(rest[1:], ctx)
     elif pkg not in ("tsc", "ts-node", "tsx"):
         raise PolicyError(f"npx {pkg} は使えません(使えるのは cdk / tsc / ts-node / tsx)")
-    # プロジェクトに入っていないパッケージをレジストリから取ってこない(npm ci の漏れを検出するため)
-    return ["--no"] + rest
+    # プロジェクトに入っていないパッケージをレジストリから取ってこない(npm ci の漏れを検出するため)。
+    # `--` がないと、`npx --no cdk --version` の --version を npm が自分宛てと解釈する
+    return ["--no", "--"] + rest
 
 
 NPM_RUN_ALLOWED = {"build", "test"}
