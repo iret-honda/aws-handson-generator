@@ -16,3 +16,5 @@ cdk.context.json
 # 個人用の Claude Code 設定(テレメトリの env など)
 .claude/settings.local.json
 outputs/
+# 設計書の PDF は作成者の氏名を含むため公開リポジトリに置かない(各自のローカルに保持)
+docs/*.pdf
