@@ -1,0 +1,16 @@
+{
+  "jobId": "sqs-intro-20261010-01",
+  "round": 5,
+  "mode": "auto",
+  "result": "pass",
+  "startedAt": "2026-10-10T20:40:55+00:00",
+  "endedAt": "2026-10-10T20:49:49+00:00",
+  "static": {"S1": "pass", "S2": "pass", "S3": "pass", "S4": "pass"},
+  "failedSteps": [],
+  "deniedSteps": [],
+  "cliSubstituted": [],
+  "offTextActions": [],
+  "cleanup": {"readmeCleanupOk": true, "remainingCount": 0, "remainingAfterTeardown": 0, "manualDeletion": []},
+  "limits": {"stoppedByLimit": false, "reasons": []},
+  "estimatedUsd": 0.0102
+}

@@ -9,13 +9,14 @@ description: ハンズオンの後片付けで消し忘れやすいリソース(
 
 ## 後片付け検証の手順
 
-1. 本文の「後片付け」を上から実行する(IaC の destroy を含む)。
-2. `./scripts/list-tagged.sh <job-id> <profile> <region>` を実行し、3つの節(タグ付きリソース / CloudFormation スタック / IAM ロール)がすべて空であることを確認する。
-3. 削除直後は Resource Groups Tagging API に数分間残ることがある。表示された ARN は、各サービスの describe 系コマンドで実在するか確かめる。実在しなければ5分後に再実行する。
+1. 本文の「後片付け」を上から実行する(IaC の destroy を含む)。検証担当は `sandbox-runner` の `run_step` で実行する。
+2. `sandbox-runner` の `list_tagged_resources` で、`remainingCount` が0であることを確認する。タグ付きリソース(Tagging API)、CloudFormation スタック、IAM ロール・ポリシー、名前にジョブIDを含むロググループを調べる。人が確認するときは `./scripts/list-tagged.sh <job-id> <profile> <region>` を使う(3つの節がすべて空なら合格)。
+3. 削除直後は Resource Groups Tagging API に数分間残ることがある。`list_tagged_resources` は対応する種類について実在を確かめ、削除済みのものを `pendingPropagation` に分ける(数えない)。`list-tagged.sh` で表示された ARN は、各サービスの describe 系コマンドで実在するか確かめる。
 4. 下のサービス別項目のうち、該当するものを確認する。
 5. 残っていたら失敗扱い。本文の後片付けに足りない手順を執筆担当に返す。
+6. 合否にかかわらず、ラウンドの最後に `teardown` を呼ぶ(IaC の destroy の後、タグで残骸を掃除する)。teardown が自動削除に対応していない種類は「要手動削除」として返るので、人が消す。
 
-取りこぼしたリソースを人が消すときも、`handson-job-id` タグを確認してから消す。タグのない既存リソースには触れない。アカウント全体を掃除するツール(aws-nuke など)は使わない。
+取りこぼしたリソースを人が消すときも、`handson-job-id` タグを確認してから消す。タグのない既存リソースには触れない。アカウント全体を掃除するツール(aws-nuke など)は使わない。定期的な取りこぼし対策は `./scripts/cleanup-stale.sh <profile> <region>`(タグ付きで24時間以上経ったものだけを一覧し、`--execute` で消す)。
 
 ## 共通の落とし穴
 

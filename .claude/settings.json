@@ -7,14 +7,16 @@
     "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
     "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
     "OTEL_METRIC_EXPORT_INTERVAL": "10000",
-    "OTEL_LOGS_EXPORT_INTERVAL": "5000"
+    "OTEL_LOGS_EXPORT_INTERVAL": "5000",
+    "MCP_TOOL_TIMEOUT": "1900000"
   },
   "enabledMcpjsonServers": [
     "aws-knowledge",
     "aws-documentation",
     "aws-iac",
     "aws-terraform",
-    "aws-pricing"
+    "aws-pricing",
+    "sandbox-runner"
   ],
   "permissions": {
     "allow": [
@@ -23,15 +25,22 @@
       "Bash(./scripts/aws-identity.sh *)",
       "Bash(./scripts/list-tagged.sh *)",
       "Bash(python3 scripts/report.py *)",
+      "Bash(python3 scripts/gate-status.py *)",
       "mcp__aws-knowledge",
       "mcp__aws-documentation",
       "mcp__aws-iac",
       "mcp__aws-terraform",
-      "mcp__aws-pricing"
+      "mcp__aws-pricing",
+      "mcp__sandbox-runner__list_steps",
+      "mcp__sandbox-runner__run_step",
+      "mcp__sandbox-runner__list_tagged_resources",
+      "mcp__sandbox-runner__teardown",
+      "mcp__sandbox-runner__estimate_job_cost"
     ],
     "ask": [
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(./scripts/cleanup-stale.sh *)"
     ],
     "deny": [
       "Bash(aws *)",
@@ -42,6 +51,10 @@
       "Bash(terraform *)",
       "Bash(tofu *)",
       "Bash(sam *)",
+      "Bash(*mcp/sandbox-runner/shims*)",
+      "Bash(*sandbox_runner.guard*)",
+      "Edit(jobs/*/sandbox/**)",
+      "Write(jobs/*/sandbox/**)",
       "Read(~/.aws/credentials)",
       "Read(~/.aws/config)"
     ]

@@ -27,8 +27,8 @@ root = Path(sys.argv[1])
 job_id = sys.argv[2]
 extra_ids = sys.argv[3:]
 PLACEHOLDER = "123456789012"
-# テレメトリの生データと依存パッケージ・合成結果はコミットしないので対象外
-SKIP_DIRS = {"node_modules", "cdk.out"}
+# テレメトリの生データ、依存パッケージ・合成結果、sandbox-runner の作業領域はコミットしないので対象外
+SKIP_DIRS = {"node_modules", "cdk.out", "sandbox", ".terraform"}
 SKIP_FILES = {"telemetry.json"}
 
 ids = list(extra_ids)

@@ -1,0 +1,25 @@
+[project]
+name = "sandbox-runner"
+version = "0.1.0"
+description = "ハンズオン検証用の MCP サーバー。AWS への書き込み経路をこのサーバー1つに絞る"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.43.111,<2",
+    "mcp>=1.30.0,<2",
+]
+
+[project.scripts]
+sandbox-runner = "sandbox_runner.server:main"
+sandbox-runner-stale = "sandbox_runner.stale:main"
+
+[build-system]
+requires = ["uv_build>=0.9.27,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

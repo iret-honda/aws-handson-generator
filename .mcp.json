@@ -28,6 +28,13 @@
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
     },
+    "sandbox-runner": {
+      "command": "uv",
+      "args": ["run", "--quiet", "--project", "mcp/sandbox-runner", "sandbox-runner"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
     "aws-pricing": {
       "command": "uvx",
       "args": ["awslabs.aws-pricing-mcp-server@1.1.1"],

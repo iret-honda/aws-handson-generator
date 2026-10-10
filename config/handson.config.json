@@ -9,7 +9,8 @@
     "planRejectRatio": 0.8,
     "tokenCostUsd": 10.0,
     "maxRuntimeMinutes": 60,
-    "maxFixLoops": 3
+    "maxFixLoops": 3,
+    "teardownRatio": 0.9
   },
   "tagging": {
     "jobTagKey": "handson-job-id",
@@ -39,6 +40,34 @@
         "cacheCreation": "cacheCreation"
       }
     }
+  },
+  "sandbox": {
+    "shell": "bash",
+    "defaultTimeoutSeconds": 600,
+    "maxTimeoutSeconds": 1800,
+    "outputLimitChars": 12000,
+    "ec2AllowedInstanceTypes": ["t3.micro", "t4g.micro", "t3.small", "t4g.small"],
+    "deniedAwsServices": [
+      "organizations", "account", "billing", "ce", "cur", "support", "route53domains",
+      "savingsplans", "marketplace-catalog", "shield", "sso", "sso-admin", "sso-oidc",
+      "identitystore", "configure", "login"
+    ],
+    "deniedAwsOperations": [
+      "iam:create-user", "iam:create-access-key", "iam:create-login-profile", "iam:update-login-profile",
+      "iam:attach-user-policy", "iam:put-user-policy", "iam:add-user-to-group",
+      "iam:create-account-alias", "iam:delete-account-alias", "iam:update-account-password-policy",
+      "sts:assume-role", "sts:assume-role-with-saml", "sts:assume-role-with-web-identity",
+      "sts:get-session-token", "sts:get-federation-token",
+      "ec2:purchase-reserved-instances-offering", "ec2:purchase-scheduled-instances",
+      "ec2:purchase-host-reservation", "ec2:create-capacity-reservation",
+      "cloudtrail:stop-logging", "cloudtrail:delete-trail", "cloudtrail:update-trail",
+      "s3api:delete-public-access-block", "s3control:delete-public-access-block"
+    ],
+    "teardownMaxPasses": 3,
+    "teardownStackWaitSeconds": 900
+  },
+  "gate2": {
+    "requiredConsecutivePasses": 3
   },
   "phases": [
     { "id": "research", "label": "リサーチ・構成案" },
