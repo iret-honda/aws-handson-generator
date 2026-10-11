@@ -120,6 +120,26 @@ def test_aws_denied(args):
         check_aws(args, ctx())
 
 
+def test_aws_bedrock_inference_allowlist():
+    check_aws(["bedrock-runtime", "invoke-model", "--model-id", "amazon.titan-embed-text-v2:0",
+               "--body", "file://req.json", "--cli-binary-format", "raw-in-base64-out", "out.json"], ctx())
+    check_aws(["bedrock-runtime", "converse", "--model-id=amazon.nova-lite-v1:0", "--messages", "file://m.json"], ctx())
+    check_aws(["bedrock", "get-foundation-model", "--model-identifier", "amazon.nova-lite-v1:0"], ctx())
+
+
+@pytest.mark.parametrize("args", [
+    ["bedrock-runtime", "converse", "--model-id", "anthropic.claude-opus-4-1", "--messages", "file://m.json"],
+    ["bedrock-runtime", "invoke-model", "--model-id", "amazon.nova-pro-v1:0", "--body", "{}", f"{JOB_ID}.json"],
+    ["bedrock-runtime", "invoke-model", "--body", "{}", "out.json"],
+    ["bedrock-runtime", "converse-stream", "--model-id", "amazon.nova-lite-v1:0", "--messages", "[]"],
+    ["bedrock-runtime", "start-async-invoke", "--model-id", "amazon.nova-lite-v1:0"],
+    ["bedrock-runtime", "converse", "--cli-input-json", "file://x.json"],
+])
+def test_aws_bedrock_inference_denied(args):
+    with pytest.raises(PolicyError):
+        check_aws(args, ctx())
+
+
 def test_aws_s3_high_level():
     check_aws(["s3", "cp", "file.txt", f"s3://handson-{JOB_ID}-bucket/file.txt"], ctx())
     check_aws(["s3", "ls"], ctx())

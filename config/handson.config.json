@@ -63,6 +63,8 @@
       "cloudtrail:stop-logging", "cloudtrail:delete-trail", "cloudtrail:update-trail",
       "s3api:delete-public-access-block", "s3control:delete-public-access-block"
     ],
+    "inferenceAllowedOperations": ["bedrock-runtime:invoke-model", "bedrock-runtime:converse"],
+    "inferenceAllowedModels": ["amazon.titan-embed-text-v2:0", "amazon.nova-lite-v1:0"],
     "teardownMaxPasses": 3,
     "teardownStackWaitSeconds": 900
   },

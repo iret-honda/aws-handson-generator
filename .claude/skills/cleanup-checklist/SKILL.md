@@ -10,7 +10,7 @@ description: ハンズオンの後片付けで消し忘れやすいリソース(
 ## 後片付け検証の手順
 
 1. 本文の「後片付け」を上から実行する(IaC の destroy を含む)。検証担当は `sandbox-runner` の `run_step` で実行する。
-2. `sandbox-runner` の `list_tagged_resources` で、`remainingCount` が0であることを確認する。タグ付きリソース(Tagging API)、CloudFormation スタック、IAM ロール・ポリシー、名前にジョブIDを含むロググループを調べる。人が確認するときは `./scripts/list-tagged.sh <job-id> <profile> <region>` を使う(3つの節がすべて空なら合格)。
+2. `sandbox-runner` の `list_tagged_resources` で、`remainingCount` が0であることを確認する。タグ付きリソース(Tagging API)、CloudFormation スタック、IAM ロール・ポリシー、名前にジョブIDを含むロググループを調べる。人が確認するときは `./scripts/list-tagged.sh <job-id> <profile> <region>` を使う(すべての節が空なら合格。節の数はサービス対応の追加で増える)。
 3. 削除直後は Resource Groups Tagging API に数分間残ることがある。`list_tagged_resources` は対応する種類について実在を確かめ、削除済みのものを `pendingPropagation` に分ける(数えない)。`list-tagged.sh` で表示された ARN は、各サービスの describe 系コマンドで実在するか確かめる。
 4. 下のサービス別項目のうち、該当するものを確認する。
 5. 残っていたら失敗扱い。本文の後片付けに足りない手順を執筆担当に返す。
@@ -42,6 +42,7 @@ description: ハンズオンの後片付けで消し忘れやすいリソース(
 | RDS / Aurora | 最終スナップショット、削除保護、自動バックアップ | `skip_final_snapshot`、削除保護オフ。`aws rds describe-db-snapshots` |
 | DynamoDB | 削除保護、オンデマンドバックアップ | 削除保護オフ。`aws dynamodb list-backups` |
 | SQS | DLQ を別に作った場合の消し忘れ | DLQ も IaC で作る |
+| S3 Vectors | ベクトルバケット・インデックス(Tagging API に出るかは未確認)。インデックスが残るとバケットを削除できない | 確認: `aws s3vectors list-vector-buckets --prefix handson-<job-id>` と `aws s3vectors get-vector-bucket`(`NotFoundException` で不在)。CDK ではインデックスからバケットを `attrVectorBucketArn` で参照し、削除順(インデックス → バケット)を保証する |
 | SNS | トピック削除後もサブスクリプションが残る場合(メール購読の未確認など) | `aws sns list-subscriptions` |
 | KMS | カスタマーマネージドキーは即時削除できず、7日以上の削除待機中もタグ付きで残る | 原則使わない(`cost-guardrails` の要承認)。AWS マネージドキーを使う |
 | Secrets Manager | 既定で7〜30日の復旧期間中は残る | CLI: `--force-delete-without-recovery`、Terraform: `recovery_window_in_days = 0` |

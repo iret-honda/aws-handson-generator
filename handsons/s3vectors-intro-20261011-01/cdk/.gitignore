@@ -1,0 +1,8 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+cdk.out
+cdk.context.json
+# ハンズオン中に作る埋め込み・検索結果・回答のファイル(後片付けで削除する)
+work

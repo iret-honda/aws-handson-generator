@@ -77,6 +77,9 @@ def kind_of(arn: str) -> str:
     a = parse_arn(arn)
     if a["service"] in ("sqs", "sns", "s3"):
         return {"sqs": "sqs:queue", "sns": "sns:topic", "s3": "s3:bucket"}[a["service"]]
+    if a["service"] == "s3vectors":
+        # arn:aws:s3vectors:<region>:<account>:bucket/<bucket>[/index/<index>]
+        return "s3vectors:index" if "/index/" in a["id"] else "s3vectors:bucket"
     return f"{a['service']}:{a['type']}"
 
 
@@ -101,6 +104,8 @@ class Aws:
             if a["service"] == "iam":
                 tags = self._iam_tags(a["type"], a["id"].split("/")[-1], target)
                 return tags.get(tag_key) == job_id
+            if a["service"] == "s3vectors":
+                return self._s3vectors_tags(target).get(tag_key) == job_id
             res = self.client("resourcegroupstaggingapi").get_resources(ResourceARNList=[target])
             for m in res.get("ResourceTagMappingList", []):
                 if {t["Key"]: t["Value"] for t in m.get("Tags", [])}.get(tag_key) == job_id:
@@ -131,6 +136,33 @@ class Aws:
                 return {}
             raise
         return {t["Key"]: t["Value"] for t in tags}
+
+    def _s3vectors_tags(self, arn: str) -> dict:
+        try:
+            return self.client("s3vectors").list_tags_for_resource(resourceArn=arn).get("tags", {})
+        except ClientError as e:
+            if error_code(e) in NOT_FOUND:
+                return {}
+            raise
+
+    def _s3vectors_inventory(self, tag_key: str, job_id: str, any_value: bool, seen: set[str]) -> list[Resource]:
+        """Tagging API に出るか確かめられないため、S3 Vectors はバケットとインデックスのタグを直接見る。"""
+        found: list[Resource] = []
+        v = self.client("s3vectors")
+
+        def add(arn: str) -> None:
+            tags = self._s3vectors_tags(arn)
+            if arn not in seen and tag_key in tags and (any_value or tags[tag_key] == job_id):
+                seen.add(arn)
+                found.append(Resource(arn, kind_of(arn), "s3vectors", note=_job_note(tags, tag_key, any_value).strip()))
+
+        for page in v.get_paginator("list_vector_buckets").paginate():
+            for b in page.get("vectorBuckets", []):
+                add(b["vectorBucketArn"])
+                for ipage in v.get_paginator("list_indexes").paginate(vectorBucketArn=b["vectorBucketArn"]):
+                    for ix in ipage.get("indexes", []):
+                        add(ix["indexArn"])
+        return found
 
     # ------------------------------------------------------------ 棚卸し
 
@@ -176,6 +208,8 @@ class Aws:
                 if tag_key in tags and (any_value or tags[tag_key] == job_id):
                     inv.resources.append(Resource(pol["Arn"], "iam:policy", "iam",
                                                   note=_job_note(tags, tag_key, any_value).strip()))
+
+        inv.resources.extend(self._s3vectors_inventory(tag_key, job_id, any_value, seen))
 
         if not any_value:
             # タグが付かずに残りやすい、自動作成のロググループ(cleanup-checklist の共通の落とし穴)
@@ -374,13 +408,21 @@ def _d_ec2_volume(aws, a, arn):
     return aws.client("ec2").describe_volumes(VolumeIds=[a["id"]])["Volumes"][0]["CreateTime"]
 
 
+def _d_s3vectors_bucket(aws, a, arn):
+    return aws.client("s3vectors").get_vector_bucket(vectorBucketArn=arn)["vectorBucket"].get("creationTime")
+
+
+def _d_s3vectors_index(aws, a, arn):
+    return aws.client("s3vectors").get_index(indexArn=arn)["index"].get("creationTime")
+
+
 DESCRIBERS: dict[str, Callable] = {
     "sqs:queue": _d_sqs, "sns:topic": _d_sns, "s3:bucket": _d_s3, "lambda:function": _d_lambda,
     "logs:log-group": _d_logs, "dynamodb:table": _d_dynamodb, "cloudformation:stack": _d_cfn,
     "iam:role": _d_iam_role, "iam:policy": _d_iam_policy, "ecr:repository": _d_ecr,
     "secretsmanager:secret": _d_secret, "ssm:parameter": _d_ssm, "states:stateMachine": _d_states,
     "events:rule": _d_events, "ec2:instance": _d_ec2_instance, "ec2:security-group": _d_ec2_sg,
-    "ec2:volume": _d_ec2_volume,
+    "ec2:volume": _d_ec2_volume, "s3vectors:bucket": _d_s3vectors_bucket, "s3vectors:index": _d_s3vectors_index,
 }
 
 
@@ -481,19 +523,33 @@ def _x_cfn(aws, a, arn):
     aws.client("cloudformation").delete_stack(StackName=arn)
 
 
+def _x_s3vectors_index(aws, a, arn):
+    # インデックスを消すと中のベクトルも消える
+    aws.client("s3vectors").delete_index(indexArn=arn)
+
+
+def _x_s3vectors_bucket(aws, a, arn):
+    # 空でないバケットは消せないので、先に中のインデックスを消す
+    v = aws.client("s3vectors")
+    for page in v.get_paginator("list_indexes").paginate(vectorBucketArn=arn):
+        for ix in page.get("indexes", []):
+            v.delete_index(indexArn=ix["indexArn"])
+    v.delete_vector_bucket(vectorBucketArn=arn)
+
+
 DELETERS: dict[str, Callable] = {
     "sqs:queue": _x_sqs, "sns:topic": _x_sns, "s3:bucket": _x_s3, "lambda:function": _x_lambda,
     "logs:log-group": _x_logs, "dynamodb:table": _x_dynamodb, "iam:role": _x_iam_role,
     "iam:policy": _x_iam_policy, "ecr:repository": _x_ecr, "secretsmanager:secret": _x_secret,
     "ssm:parameter": _x_ssm, "states:stateMachine": _x_states, "events:rule": _x_events,
     "ec2:instance": _x_ec2_instance, "ec2:security-group": _x_ec2_sg, "ec2:volume": _x_ec2_volume,
-    "cloudformation:stack": _x_cfn,
+    "cloudformation:stack": _x_cfn, "s3vectors:index": _x_s3vectors_index, "s3vectors:bucket": _x_s3vectors_bucket,
 }
 
 # 依存関係のため、先に消すほうから並べる(インスタンス → ボリューム・SG、ロール → ポリシー)
 DELETE_ORDER = [
     "cloudformation:stack", "ec2:instance", "lambda:function", "states:stateMachine", "events:rule",
-    "sns:topic", "sqs:queue", "dynamodb:table", "s3:bucket", "ecr:repository", "secretsmanager:secret",
+    "sns:topic", "sqs:queue", "dynamodb:table", "s3:bucket", "s3vectors:index", "s3vectors:bucket", "ecr:repository", "secretsmanager:secret",
     "ssm:parameter", "ec2:volume", "ec2:security-group", "iam:role", "iam:policy", "logs:log-group",
 ]
 
