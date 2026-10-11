@@ -1,0 +1,16 @@
+{
+  "jobId": "s3vectors-intro-20261011-01",
+  "round": 1,
+  "mode": "auto",
+  "result": "pass",
+  "startedAt": "2026-10-11T15:02:50+00:00",
+  "endedAt": "2026-10-11T15:06:10+00:00",
+  "static": {"S1": "pass", "S2": "pass", "S3": "pass", "S4": "pass"},
+  "failedSteps": [],
+  "deniedSteps": [],
+  "cliSubstituted": [],
+  "offTextActions": [],
+  "cleanup": {"readmeCleanupOk": true, "remainingCount": 0, "remainingAfterTeardown": 0, "manualDeletion": []},
+  "limits": {"stoppedByLimit": false, "reasons": []},
+  "estimatedUsd": 0.1536
+}

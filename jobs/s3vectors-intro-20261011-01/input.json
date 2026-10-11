@@ -1,0 +1,1 @@
+{"jobId": "s3vectors-intro-20261011-01", "service": "Amazon S3 Vectors", "iac": "cdk", "profile": "default", "accountId": "123456789012", "region": "ap-northeast-1", "level": "入門", "durationMinutes": 60, "theme": "S3 Vectors のベクトル検索で RAG を構築する(ユーザー要望: 「S3 Vectorを使用したベクトル検索でRAGを構築したいです」)", "createdAt": "2026-10-11T23:36:12+09:00"}

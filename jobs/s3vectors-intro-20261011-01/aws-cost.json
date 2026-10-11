@@ -1,0 +1,23 @@
+{
+  "estimatedUsd": 0.1537,
+  "estimatedUsdAllRounds": 0.6148,
+  "basis": "ap-northeast-1、無料枠なし、オンデマンド。検証1回あたり: Titan Text Embeddings V2 5万トークン、Nova Lite(amazon.nova-lite-v1:0、リージョン内呼び出し)入力8万・出力2万トークン(converse 20回、maxTokens 512)、S3 Vectors の PutVectors 1MB・QueryVectors 100回・その他の Vectors API 500回・保存 1MB を1か月分。CloudFormation は追加料金なし。CDK アセットの S3 リクエスト分に $0.01、生成モデルを Nova 2 Lite(jp. 推論プロファイル)に切り替えた場合と再実行の分に $0.10 のバッファ。時間課金のリソースなし",
+  "pricingRegion": "ap-northeast-1",
+  "retrievedAt": "2026-10-11T14:50:00Z",
+  "items": [
+    {"resource": "Bedrock Titan Text Embeddings V2 入力トークン (APN1-TitanEmbeddingV2-Text-input-tokens)", "unitPriceUsd": 0.000000029, "unit": "token", "quantity": 50000, "usd": 0.00145},
+    {"resource": "Bedrock Nova Lite 入力トークン (APN1-NovaLite-input-tokens)", "unitPriceUsd": 0.000000072, "unit": "token", "quantity": 80000, "usd": 0.00576},
+    {"resource": "Bedrock Nova Lite 出力トークン (APN1-NovaLite-output-tokens)", "unitPriceUsd": 0.000000288, "unit": "token", "quantity": 20000, "usd": 0.00576},
+    {"resource": "S3 Vectors PutVectors 登録バイト (APN1-Vectors-Put-Bytes)", "unitPriceUsd": 0.219, "unit": "GB", "quantity": 0.001, "usd": 0.000219},
+    {"resource": "S3 Vectors ストレージ (APN1-Vectors-TimedStorage-ByteHrs、1か月分で計上)", "unitPriceUsd": 0.066, "unit": "GB-Mo", "quantity": 0.001, "usd": 0.000066},
+    {"resource": "S3 Vectors QueryVectors リクエスト (APN1-Vectors-Request-Tier3)", "unitPriceUsd": 0.0000027, "unit": "request", "quantity": 100, "usd": 0.00027},
+    {"resource": "S3 Vectors その他の API リクエスト (APN1-Vectors-Request-Tier1/Tier2 の高いほう)", "unitPriceUsd": 0.00006, "unit": "request", "quantity": 500, "usd": 0.03},
+    {"resource": "S3 Vectors クエリ処理バイト (APN1-Vectors-Query-ProcessedBytes-Tier1)", "unitPriceUsd": 0.000004278, "unit": "GB", "quantity": 1, "usd": 0.000004278},
+    {"resource": "S3 Vectors クエリ返却バイト (APN1-Vectors-Query-Returned-Bytes)", "unitPriceUsd": 0.01, "unit": "GB", "quantity": 0.01, "usd": 0.0001},
+    {"resource": "CloudFormation (AWS::* リソース)", "unitPriceUsd": 0, "unit": "stack-operation", "quantity": 2, "usd": 0},
+    {"resource": "バッファ: CDK アセットの S3 リクエスト(単価未取得)", "unitPriceUsd": 0.01, "unit": "lump-sum", "quantity": 1, "usd": 0.01},
+    {"resource": "バッファ: 生成モデルを Nova 2 Lite (jp.) に切り替えた場合の差額(約 $0.087)と再実行分", "unitPriceUsd": 0.10, "unit": "lump-sum", "quantity": 1, "usd": 0.10}
+  ],
+  "hourlyResources": [],
+  "verifiedEstimateUsd": 0.1536
+}
