@@ -203,6 +203,9 @@ def check_aws(args: list[str], ctx: Context) -> list[str]:
     if service == "s3" and op in S3_HIGH_LEVEL:
         _check_s3_high_level(op, args, ctx)
         return args
+    if service == "bedrock-runtime":
+        _check_inference(op, options, ctx)
+        return args
     if READ_ONLY_OP.match(op):
         return args
     if "--cli-input-json" in options or "--cli-input-yaml" in options:
@@ -232,6 +235,23 @@ def _check_profile_region(options: dict[str, list[str]], ctx: Context) -> None:
     for v in options.get("--region", []):
         if v != ctx.region:
             raise PolicyError(f"--region {v} は使えません(ジョブで固定したリージョンは {ctx.region})")
+
+
+def _check_inference(op: str, options: dict[str, list[str]], ctx: Context) -> None:
+    """リソースを作らない推論呼び出しだけを、設定で許可したモデルに限って通す。
+
+    推論は対象にジョブIDやタグを持たないので、ジョブIDの有無ではなく操作とモデルIDの許可リストで判定する
+    (出力ファイル名にジョブIDを入れて通す、といった迂回もここで止まる)。費用は estimate_job_cost の見積もりで抑える。
+    """
+    cfg = ctx.sandbox_cfg
+    if f"bedrock-runtime:{op}" not in cfg.get("inferenceAllowedOperations", []):
+        raise PolicyError(f"aws bedrock-runtime {op} は使えません(許可しているのは設定の inferenceAllowedOperations だけ)")
+    if "--cli-input-json" in options or "--cli-input-yaml" in options:
+        raise PolicyError("bedrock-runtime で --cli-input-json / --cli-input-yaml は使えません(モデルIDを確認できないため)")
+    models = options.get("--model-id", [])
+    allowed = cfg.get("inferenceAllowedModels", [])
+    if len(models) != 1 or models[0] not in allowed:
+        raise PolicyError(f"--model-id は {', '.join(allowed) or '(なし)'} のどれか1つを指定してください: {', '.join(models) or '(指定なし)'}")
 
 
 def _check_s3_high_level(op: str, args: list[str], ctx: Context) -> None:

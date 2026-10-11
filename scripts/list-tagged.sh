@@ -59,3 +59,20 @@ aws iam list-roles --profile "$profile" \
       if aws iam list-role-tags --role-name "$3" --profile "$1" --query "$2" --output text | grep -q .; then
         echo "$4"
       fi' _ "$profile" "Tags[?Key=='$tag_key' && Value=='$job_id'].Value"
+
+echo "## S3 Vectors のベクトルバケットとインデックス"
+# Tagging API に出るか確かめられないため、list-tags-for-resource でタグを直接確かめる
+has_tag() {
+  aws s3vectors list-tags-for-resource --resource-arn "$1" --profile "$profile" --region "$region" \
+    --query "tags.\"$tag_key\"" --output text 2>/dev/null | grep -qx "$job_id"
+}
+for bucket_arn in $(aws s3vectors list-vector-buckets --profile "$profile" --region "$region" \
+    --query 'vectorBuckets[].vectorBucketArn' --output text); do
+  [[ $bucket_arn == None ]] && continue
+  if has_tag "$bucket_arn"; then echo "$bucket_arn"; fi
+  for index_arn in $(aws s3vectors list-indexes --vector-bucket-arn "$bucket_arn" --profile "$profile" \
+      --region "$region" --query 'indexes[].indexArn' --output text); do
+    [[ $index_arn == None ]] && continue
+    if has_tag "$index_arn"; then echo "$index_arn"; fi
+  done
+done
